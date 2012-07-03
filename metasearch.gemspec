@@ -6,7 +6,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["zhiqiangzhan@gmail.com"]
   spec.description   = %q{Meta Search Engine for crawl specific content}
   spec.summary       = %q{You can just the DSL to crawl the content you mentioned.}
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/jameszhan/metasearch"
 
   spec.files         = `git ls-files`.split($\)
   spec.executables   = spec.files.grep(%r{^bin/}).map{ |f| File.basename(f) }

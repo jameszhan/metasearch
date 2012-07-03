@@ -2,13 +2,26 @@
 
 require 'metasearch'
 
+
+include Metasearch
+
+
+
 describe "Metasearch::Builder" do
+
+
+	it 'load sample dsl' do
+		with_name("sample"){
+			load "sample.dsl"
+		}		
+		puts search_tasks
+	end
 
 	it "test builder common" do
 
 		Metasearch::Builder.new("http://sz.meituan.com/category/entertainment/all") do
 			
-			filter '#content' do |link|
+			accept '#content' do |link|
 				link.to_s =~ /food|deal/		
 			end
 			
@@ -41,6 +54,5 @@ describe "Metasearch::Builder" do
 			end			
 		end
 	end
-
 	
 end

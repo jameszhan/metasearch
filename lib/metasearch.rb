@@ -4,6 +4,28 @@ require "anemone"
 
 module Metasearch
 
+	lambda{
+		tasks = {}
+		current_filename = 'global'
+		self.send :define_method, :with_name do |filename, &block|
+			temp = current_filename
+			current_filename = filename if filename
+			block.call
+			current_filename = temp
+		end
+				
+		self.send :define_method, :crawl do |links, &block|
+			tasks[current_filename] ||= []
+			tasks[current_filename] << Builder.new(links, &block)
+		end
+		
+		self.send :define_method, :search_tasks do
+			tasks
+		end
+	
+	}.call
+	
+
 	class Builder
 		
 		OPTIONS = {
@@ -26,12 +48,12 @@ module Metasearch
 		
 		attr_reader :pattern_runners, :options, :links
 		
-    def initialize(links, filename = 'global',&block)
-			@pattern_runners, @filename, @options, @links = [], filename, {}, links
+    def initialize(links, &block)
+			@pattern_runners, @options, @links = [], {}, links
       instance_eval(&block) if block_given?
     end
 
-		def filter(block_css, &block)
+		def accept(block_css, &block)
 			@filter ||= lambda{|page|
 				links = []
 				if block_css && page.doc
@@ -61,12 +83,9 @@ module Metasearch
 			strategy.instance_eval(&block)		
 		end
 		
-		def use(key, value)
-			options[key] = value
+		def use(options)
+			@options = options
 		end
-		
-		
-		private 
 		
 		def run
 			opts = OPTIONS.merge(options)
@@ -82,6 +101,7 @@ module Metasearch
 			end
 		end
 		
+		private 		
 		def skip_links
 			/^$/
 		end
@@ -146,15 +166,14 @@ module Metasearch
 						data[field_name] = val if val
 					rescue Exception => e
 						fail_count += 1
-						puts "failed to get #{field_name} for #{page.url} #{e} pageinfo => #{page.redirect_to}"
+						puts "failed to get #{field_name} for #{page.url} #{e}"
 					end	
-					
-					if fail_count < (fields.length / 2)
-						store data
-					else
-						puts "Invalid page: #{page.url}"
-					end
 				}
+				if fail_count < (fields.length / 2)
+					store data
+				else
+					puts "Invalid page: #{page.url}"
+				end
 			end	
 		end
 		
